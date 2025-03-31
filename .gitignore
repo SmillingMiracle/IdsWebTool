@@ -1,0 +1,15 @@
+# Виключити конфігураційні файли IDE
+.idea/
+
+# Виключити зібрані файли проєкту
+dist/
+
+# Виключити залежності Node.js
+node_modules/
+
+# Інші файли
+findPath
+workErr
+workV
+workV2
+workVAnyfile
