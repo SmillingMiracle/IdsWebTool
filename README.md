@@ -11,7 +11,7 @@ Before you start, ensure that [Node.js](https://nodejs.org/) and npm are install
 ### Steps to Install:
 1. Clone the repository:
    ```bash
-   git clone https://github.com/username/ipsWebTool.git
+   git clone https://github.com/SmillingMiracle/IdsWebTool.git
    cd ipsWebTool
 ### Steps to Install:
 2. Install dependencies:
