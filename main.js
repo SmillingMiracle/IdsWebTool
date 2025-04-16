@@ -171,8 +171,16 @@ async function createAndSendZip(baseDir, deviceName) {
 
         // Add filtered `.txt` files based on the device name
         addFilteredFilesToArchive(baseDir, 'out', '.txt', deviceName, archive);
-        addFilteredFilesToArchive(baseDir, '_inputs_severin/tables', '.txt', deviceName, archive);
         addFilteredFilesToArchive(baseDir, 'temp', '.net', deviceName, archive);
+
+        // Add files found by findTableFiles to the archive inside 'tables' folder
+        if (deviceName) {
+            const tableFiles = findTableFiles(baseDir, deviceName);
+            tableFiles.forEach(filePath => {
+                const fileName = path.basename(filePath);
+                archive.file(filePath, { name: path.join('tables', fileName) }); // Add to 'tables' folder
+            });
+        }
 
         await archive.finalize();
         return { success: true, message: "Filtered ZIP successfully created and sent." };
@@ -200,12 +208,48 @@ function addFilteredFilesToArchive(baseDir, folder, extension, deviceName, archi
                 const content = fs.readFileSync(filePath, 'utf8');
                 if (folder === 'temp'){
                     archive.file(filePath, { name: path.join(folder, file) });
-                }else if ((folder === 'out' || folder === '_inputs_severin/tables') && file.includes(deviceName)){
+                }else if ((folder === 'out') && file.includes(deviceName)){
                     archive.file(filePath, { name: path.join(folder, file) });
                 }
             });
     }
 }
+
+/**
+ * Finds .txt files with "table" in the name and deviceName in the content.
+ * @param {string} baseDir - Base directory
+ * @param {string} deviceName - Device name to search for in file content
+ * @returns {string[]} - Array of file paths that match the criteria
+ */
+function findTableFiles(baseDir, deviceName) {
+    const matches = [];
+
+    function scanDirectory(dir) {
+        fs.readdirSync(dir, { withFileTypes: true }).forEach(dirent => {
+            const fullPath = path.join(dir, dirent.name);
+
+            if (dirent.isDirectory()) {
+                scanDirectory(fullPath);
+            } else if (
+                dirent.isFile() &&
+                dirent.name.endsWith('.txt') &&
+                dirent.name.toLowerCase().includes('table') &&
+                dirent.name.includes(deviceName)
+            ) {
+                try {
+                    const content = fs.readFileSync(fullPath, 'utf8');
+                        matches.push(fullPath);
+                } catch (error) {
+                    console.error(`Could not read file ${fullPath}: ${error.message}`);
+                }
+            }
+        });
+    }
+
+    scanDirectory(baseDir);
+    return matches;
+}
+
 
 /**
  * Finds a file in common directories
